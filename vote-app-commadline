@@ -1,0 +1,133 @@
+controlplane $ kubectl get pod 
+NAME                      READY   STATUS    RESTARTS   AGE
+postg-5b6d675f6c-cwh8z    1/1     Running   0          13m
+redis-bb98bb69c-rbbkn     1/1     Running   0          11m
+result-6b9bb665c4-sdmrv   1/1     Running   0          10m
+vote-6688689864-55vl6     1/1     Running   0          8m12s
+worker-7694b8d8c-h9w2q    1/1     Running   0          6m32s
+
+
+
+controlplane $ kubectl exec -it postg-5b6d675f6c-cwh8z bash
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+root@postg-5b6d675f6c-cwh8z:/# ls
+bin   dev                         docker-entrypoint.sh  home  lib64  mnt  proc  run   srv  tmp  var
+boot  docker-entrypoint-initdb.d  etc                   lib   media  opt  root  sbin  sys  usr
+
+
+
+
+root@postg-5b6d675f6c-cwh8z:/var/lib/postgresql/data# cd
+root@postg-5b6d675f6c-cwh8z:~# psql -Upostgres
+psql (9.4.26)
+Type "help" for help.
+
+postgres=# l/
+postgres-# /l
+postgres-# \l
+                                 List of databases
+   Name    |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges   
+-----------+----------+----------+------------+------------+-----------------------
+ postgres  | postgres | UTF8     | en_US.utf8 | en_US.utf8 | 
+ template0 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+           |          |          |            |            | postgres=CTc/postgres
+ template1 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+           |          |          |            |            | postgres=CTc/postgres
+(3 rows)
+
+postgres-# \c
+You are now connected to database "postgres" as user "postgres".
+
+postgres=# \l
+                                 List of databases
+   Name    |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges   
+-----------+----------+----------+------------+------------+-----------------------
+ postgres  | postgres | UTF8     | en_US.utf8 | en_US.utf8 | 
+ template0 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+           |          |          |            |            | postgres=CTc/postgres
+ template1 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+           |          |          |            |            | postgres=CTc/postgres
+(3 rows)
+
+postgres=# exit
+postgres-# D
+postgres-# \q
+root@postg-5b6d675f6c-cwh8z:~# exit
+exit
+controlplane $ history 
+    1  apt-get update
+    2  halt
+    3  FILE=/ks/wait-background.sh; while ! test -f ${FILE}; do clear; sleep 0.1; done; bash ${FILE}
+    4  history 
+    5  kubectl create ns vote
+    6  kubectl get ns 
+    7  kubectl create deployment postg  --image=postgres:9.4 
+    8  kubectl get pod
+    9  kubectl edit deployment 
+ 
+ this env has to pass to  the postgres deployment after creating with the cli 
+
+    spec:
+      containers:
+      - image: postgres:9.4
+        name: postgres
+        env:
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: postgres
+        ports:
+        - containerPort: 5432
+
+after adding the env.  in the postgres deployment then it will become like this 
+
+
+    spec:
+      containers:
+      - env:
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: postgres
+        image: postgres:9.4
+        imagePullPolicy: IfNotPresent
+        name: postgres
+        ports:
+        - containerPort: 5432
+
+
+   10  kubectl get pod 
+   11  kubectl expose deployment postg  --port=5432 
+   12  kubectl get svc
+   13  kubectl create deployment  redis --image=redis:alpine --port=6379
+   14  kubectl get pod 
+   15  kubectl get pod -w
+   16  kubectl expose deployment redis --port=6379
+   17  kubectl create deployment result --image=dockersamples/examplevotingapp_result:before --port=80
+   18  kubectl get pod 
+   19  kubectl get pod -w
+   20  kubectl expose deployment result --port=18080  --target-port=80 
+   21  kubectl create deployment vote  --image=dockersamples/examplevotingapp_vote:before --port=80
+   22  kubectl get pod 
+   23  kubectl expose deployment vote  --port=28080 --target-port=80  
+   24  kubectl create deployment worker --image=dockersamples/examplevotingapp_worker 
+   25  kubectl expose deployment worker  --port=80 
+   26  kubectl get pod 
+   27  kubectl get svc
+   28  kubectl get pod -o wide 
+   29  kubectl get svc -o wide 
+   30  kubectl  get pods  --show-labels
+   31  kubectl get svc --show-labels 
+   32  curl 10.102.214.222:28080
+   33  curl 10.96.112.53:18080
+   34  curl 10.100.4.45:80
+   35  kubectl get svc
+   36  kubectl edit svc result
+   37  kubectl edit svc vote
+   38  kubectl get svc
+   39  kubectl describe svc vote
+   40  kubectl describe svc result
+   41  kubectl descirbe svc worker
+   42  kubectl describe svc worker
+   43  kubectl get pod 
+   44  kubectl exec -it postg-5b6d675f6c-cwh8z bash
